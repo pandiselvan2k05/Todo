@@ -2,6 +2,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { loginApi } from "../api/auth";
+import { setAccessToken } from "../api/main";
+
 
 function Login() {
   const [formData, setFormData] = useState({
@@ -28,53 +30,62 @@ function Login() {
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setMessage("");
-    setLoading(true);
+  
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setMessage("");
+  setLoading(true);
 
-    try {
-      const response = await loginApi(formData);
-      const { token } = response;
-      const role = response.user?.role;
+  try {
+    const response = await loginApi(formData);
 
-      if (!token || !role) {
-        throw new Error("The server returned an invalid login response. Please try again.");
-      }
+    const token = response.accessToken;
+    const role = response.user?.role;
 
-      if (role !== "admin" && role !== "user") {
-        throw new Error("Your account has an unsupported role. Please contact support.");
-      }
-
-      // Store JWT token and role
-      localStorage.setItem("token", token);
-      localStorage.setItem("role", role);
-      window.dispatchEvent(new Event("auth:login"));
-
-      // Role-based navigation
-      if (role === "admin") {
-        navigate("/admin", { replace: true });
-      } else {
-        navigate("/user", { replace: true });
-      }
-
-    } catch (error) {
-      const status = error.response?.status;
-      const serverMessage = error.response?.data?.message;
-
-      if (!error.response) {
-        setMessage("Unable to reach the server. Check your connection and try again.");
-      } else if (status === 401) {
-        setMessage(serverMessage || "Email or password is incorrect.");
-      } else if (status >= 500) {
-        setMessage("The server encountered an error. Please try again later.");
-      } else {
-        setMessage(serverMessage || error.message || "Login failed. Please try again.");
-      }
-    } finally {
-      setLoading(false);
+    if (!token || !role) {
+      throw new Error(
+        "Invalid login response. Check your backend response."
+      );
     }
-  };
+
+    if (role !== "admin" && role !== "user") {
+      throw new Error("Unsupported account role.");
+    }
+
+    // Access token memory-la store pannuvom
+    setAccessToken(token);
+
+    // Login event
+    window.dispatchEvent(new Event("auth:login"));
+
+    // Role-based navigation
+    if (role === "admin") {
+      navigate("/admin", { replace: true });
+    } else {
+      navigate("/user", { replace: true });
+    }
+  } catch (error) {
+    const status = error.response?.status;
+    const serverMessage = error.response?.data?.message;
+
+    if (!error.response) {
+      setMessage(
+        "Unable to reach the server. Check your connection."
+      );
+    } else if (status === 401) {
+      setMessage(
+        serverMessage || "Email or password is incorrect."
+      );
+    } else {
+      setMessage(
+        serverMessage || error.message || "Login failed."
+      );
+    }
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="login-container">

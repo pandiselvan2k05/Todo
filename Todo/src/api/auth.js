@@ -1,5 +1,5 @@
-import api from "./main";
 
+import api from "./main";
 
 export const loginApi = async (formData) => {
   const response = await api.post("/login", formData);
@@ -8,5 +8,10 @@ export const loginApi = async (formData) => {
 
 export const verifyApi = async () => {
   const response = await api.get("/verify");
+  return response.data;
+};
+
+export const logoutApi = async () => {
+  const response = await api.post("/logout");
   return response.data;
 };

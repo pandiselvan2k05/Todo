@@ -1,15 +1,32 @@
-import { Router } from "express";
-import { deleteUser, getUserById, getUsers, loginUser, registerUser, updateUser } from "../Controller/Usercontrol.js";
+
+import express from "express";
+
+import {
+  registerUser,
+  loginUser,
+  refreshToken,
+  logoutUser,
+  getUsers,
+  getUserById,
+  updateUser
+} from "../Controller/Usercontrol.js";
 import { verifytoken } from "../Helper/userauth.js";
-import { authorizeRoles } from "../middleware/role.js";
 
 
-const router = Router();
+const router = express.Router();
 
-router.route("/login").post(loginUser)
-router.route("/register").post(registerUser)
+router.post("/register", registerUser);
+router.post("/login", loginUser);
 
-router.route("/users").get(verifytoken,authorizeRoles("user"),getUsers)
-router.route("/user/:id").get(getUserById).put(updateUser).delete(deleteUser);
+// Refresh token cookie-ai use pannum
+router.post("/refresh", refreshToken);
+
+// Logout
+router.post("/logout", logoutUser);
+
+// Protected CRUD routes
+router.get("/users", verifytoken, getUsers);
+router.get("/user/:id", verifytoken, getUserById);
+router.put("/user/:id", verifytoken, updateUser);
 
 export default router;

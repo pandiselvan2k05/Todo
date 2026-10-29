@@ -20,7 +20,11 @@ const userSchema = new Schema({
     type: String,
     required: true,
     unique: true
-  }
+  },
+  refreshTokenHash: {
+  type: String,
+  default: null
+}
 });
 
 userSchema.pre("save", async function () {
@@ -36,7 +40,7 @@ userSchema.methods.createJwt = function () {
       role: this.role
     },
     process.env.PASSWORD,
-    { expiresIn: "3d" }
+    { expiresIn: "1m" }
   );
 };
 
